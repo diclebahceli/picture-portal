@@ -1,20 +1,32 @@
 import axios from "axios";
 import { useState } from "react";
+import { signUp } from "./api";
 
 export function SignUp() {
   const [username, setUsername] = useState();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [passwordR, setPasswordR] = useState();
+  const [apiProgress, setApiProgress] = useState(false);
+  const [successMessage, setSuccessMessage] = useState();
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
-    axios.post("/api/1.0/users", {
-      username,
-      email,
-      password,
-    });
-  };
+    setApiProgress(true);
+    try {
+      const response = await signUp({
+        username,
+        email,
+        password,
+      });
+      setSuccessMessage(response.data.message);
+    }catch(error){
+      setSuccessMessage(error.response.data.message);
+    }finally{
+      setApiProgress(false);
+    }
+   
+
   return (
     <div className="container">
       <div className="col-lg-6 offset-lg-3 col-sm-8 offset-sm-2">
@@ -65,14 +77,16 @@ export function SignUp() {
                 onChange={(event) => setPasswordR(event.target.value)}
               />
             </div>
-            <div className="text-center">
+            {successMessage && ( <div className="alert alert-success">{successMessage}</div>) } 
+            <div className="align-items-center">
               <button
                 className="btn btn-primary"
                 disabled={
-                  !username || !email || !password || password !== passwordR
+                  (!username || !email || !password || password !== passwordR) || apiProgress
                 }
               >
-                Sign up
+            {  apiProgress && <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>}      
+                  Sign up
               </button>
             </div>
           </div>
@@ -80,4 +94,4 @@ export function SignUp() {
       </div>
     </div>
   );
-}
+  }}
